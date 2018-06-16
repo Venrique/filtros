@@ -5,36 +5,41 @@
  */
 package vista;
 
+import dao.FiltroDao;
 import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import javax.swing.JComboBox;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-
+import modelo.Filtro;
 
 /**
  *
  * @author LN710Q
  */
 public class Consulta extends JFrame {
-    public  JLabel lblCodigo,lblMarca,lblStock,lblExistencia;
-    
-    public JTextField codigo, descripcion,stock;
+
+    public JLabel lblCodigo, lblMarca, lblStock, lblExistencia;
+
+    public JTextField codigo, descripcion, stock;
     public JComboBox marca;
-    
+
     ButtonGroup existencia = new ButtonGroup();
     public JRadioButton no;
     public JRadioButton si;
     public JTable resultados;
-    
+
     public JPanel table;
-    
+
     public JButton buscar, eliminar, insertar, limpiar, actualizar;
-    
+
     private static final int ANCHOC = 130, ALTOC = 30;
-    
+
     DefaultTableModel tm;
-    
-    public Consulta(){
+
+    public Consulta() {
         super("Inventario");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null);
@@ -57,23 +62,23 @@ public class Consulta extends JFrame {
         container.add(eliminar);
         container.add(limpiar);
         container.add(table);
-        setSize(600,600);
+        setSize(600, 600);
         eventos();
     }
-    
-    public final void agregarLabels(){
+
+    public final void agregarLabels() {
         lblCodigo = new JLabel("Codigo");
         lblMarca = new JLabel("Marca");
         lblStock = new JLabel("Stock");
         lblExistencia = new JLabel("Stock en tienda");
-        lblCodigo.setBounds(10,10,ANCHOC,ALTOC);
-        lblMarca.setBounds(10,60,ANCHOC,ALTOC);
-        lblStock.setBounds(10,100,ANCHOC,ALTOC);
-        lblExistencia.setBounds(10,140,ANCHOC,ALTOC);
+        lblCodigo.setBounds(10, 10, ANCHOC, ALTOC);
+        lblMarca.setBounds(10, 60, ANCHOC, ALTOC);
+        lblStock.setBounds(10, 100, ANCHOC, ALTOC);
+        lblExistencia.setBounds(10, 140, ANCHOC, ALTOC);
     }
-    
-    public final void formulario(){
-        
+
+    public final void formulario() {
+
         codigo = new JTextField();
         marca = new JComboBox();
         stock = new JTextField();
@@ -82,30 +87,167 @@ public class Consulta extends JFrame {
         resultados = new JTable();
         buscar = new JButton("Buscar");
         insertar = new JButton("Insertar");
-        eliminar  = new JButton("Eliminar");
+        eliminar = new JButton("Eliminar");
         actualizar = new JButton("Actualizar");
         limpiar = new JButton("Limpiar");
-        
+
         table = new JPanel();
         marca.addItem("FRAM");
         marca.addItem("WIX");
         marca.addItem("Luber Finer");
         marca.addItem("OSK");
-        
+
         existencia = new ButtonGroup();
         existencia.add(si);
         existencia.add(no);
-        
-        codigo.setBounds(140,10,ANCHOC,ALTOC);
-        marca.setBounds(140,60,ANCHOC,ALTOC);
-        stock.setBounds(140,100,ANCHOC,ALTOC);
-        si.setBounds(140,50,ANCHOC,ALTOC);
-        no.setBounds(140,50,ANCHOC,ALTOC);
-        
-        buscar.setBounds(300,10,ANCHOC,ALTOC);
-        insertar.setBounds(10,210,ANCHOC,ALTOC);
-        actualizar.setBounds(150,210,ANCHOC,ALTOC);
-        eliminar.setBounds(300,210,ANCHOC,ALTOC);
-        limpiar.setBounds(450,210,ANCHOC,ALTOC);
+
+        codigo.setBounds(140, 10, ANCHOC, ALTOC);
+        marca.setBounds(140, 60, ANCHOC, ALTOC);
+        stock.setBounds(140, 100, ANCHOC, ALTOC);
+        si.setBounds(140,140, 50, ALTOC);
+        no.setBounds(210,140, 50, ALTOC);
+
+        buscar.setBounds(300, 10, ANCHOC, ALTOC);
+        insertar.setBounds(10, 210, ANCHOC, ALTOC);
+        actualizar.setBounds(150, 210, ANCHOC, ALTOC);
+        eliminar.setBounds(300, 210, ANCHOC, ALTOC);
+        limpiar.setBounds(450, 210, ANCHOC, ALTOC);
+        resultados = new JTable();
+        table.setBounds(10, 250, 500, 200);
+        table.add(new JScrollPane(resultados));
+    }
+
+    public void llenarTabla() {
+        tm = new DefaultTableModel() {
+            public Class<?> getColumnClass(int column) {
+                switch (column) {
+                    case 0:
+                        return String.class;
+                    case 1:
+                        return String.class;
+                    case 2:
+                        return Boolean.class;
+                        
+                    default:
+                        return String.class;
+
+                }
+            }
+        };
+
+        tm.addColumn("Codigo");
+        tm.addColumn("Stock");
+        tm.addColumn("Stock en sucursal");
+        tm.addColumn("Marca");
+
+        FiltroDao fd = new FiltroDao();
+        ArrayList<Filtro> filtros = fd.readAll();
+
+        for (Filtro fi : filtros) {
+            tm.addRow(new Object[]{fi.getCodigo(),  fi.getStock(), fi.isExistencia(),fi.getMarca()});
+        }
+        resultados.setModel(tm);
+    }
+
+    public void eventos() {
+
+        insertar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FiltroDao fd = new FiltroDao();
+                Filtro f = new Filtro(codigo.getText(),Integer.parseInt(stock.getText()),true , marca.getSelectedIndex() );
+                if (no.isSelected()) {
+                    f.setExistencia(false);
+                }
+
+                if (fd.create(f)) {
+                    JOptionPane.showMessageDialog(null, "Filtro registrado con exito");
+                    limpiarCampos();
+                    llenarTabla();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Ocurrio un problema al momento de crear el filtro");
+                }
+            }
+
+        });
+
+        actualizar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FiltroDao fd = new FiltroDao();
+                Filtro f = new Filtro(codigo.getText(),Integer.parseInt(stock.getText()),true , marca.getSelectedIndex());
+                if (no.isSelected()) {
+                    f.setExistencia(false);
+                }
+
+                if (fd.update(f)) {
+                    JOptionPane.showMessageDialog(null, "Filtro modificado con exito");
+                    limpiarCampos();
+                    llenarTabla();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Ocurrio un problema al momento de crear el filtro");
+                }
+            }
+
+        });
+
+        eliminar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FiltroDao fd = new FiltroDao();
+                if (fd.delete(codigo.getText())) {
+                    JOptionPane.showMessageDialog(null, "Filtro eliminado con exito");
+                    limpiarCampos();
+                    llenarTabla();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Ocurrio un problema al eliminar el filtro");
+                }
+            }
+
+        });
+
+        buscar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FiltroDao fd = new FiltroDao();
+                Filtro f = fd.read(codigo.getText());
+                if (f == null) {
+                    JOptionPane.showMessageDialog(null, "El filtro buscado no se ha encontrado");
+                } else {
+                    codigo.setText(f.getCodigo());
+                    marca.setSelectedItem(f.getMarca());
+                    stock.setText(Integer.toString(f.getStock()));
+
+                    if (f.isExistencia()) {
+                        si.setSelected(true);
+                    } else {
+                        no.setSelected(true);
+                    }
+                }
+            }
+        });
+
+        limpiar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                limpiarCampos();
+            }
+        });
+    }
+    
+    public void limpiarCampos(){
+        codigo.setText("");
+        marca.setSelectedItem("FRAM");
+        stock.setText("");
+    }
+    
+    public static void main(String[] args){
+        java.awt.EventQueue.invokeLater(new Runnable(){
+            @Override
+            public void run() {
+                new Consulta().setVisible(true);
+            }
+            
+        });
     }
 }

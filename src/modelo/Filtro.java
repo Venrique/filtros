@@ -12,7 +12,7 @@ package modelo;
 public class Filtro {
     private int id;
     private String codigo;
-    private String marca;
+    private int marca;
     private int stock;
     private boolean existencia;
     
@@ -20,7 +20,7 @@ public class Filtro {
         
     }
 
-    public Filtro(int id,String codigo, String marca,int stock, boolean existencia) {
+    public Filtro(int id,String codigo ,int stock, boolean existencia,int marca) {
         this.id = id;
         this.codigo = codigo;
         this.stock = stock;
@@ -28,14 +28,14 @@ public class Filtro {
         this.existencia = existencia;
     }
 
-    public Filtro(String codigo, String marca,int stock, boolean existencia) {
+    public Filtro(String codigo,int stock, boolean existencia, int marca) {
         this.stock = stock;
         this.codigo = codigo;
         this.marca = marca;
         this.existencia = existencia;
     }
 
-    public Filtro(String marca,int stock, boolean existencia) {
+    public Filtro(int marca,int stock, boolean existencia) {
         this.stock = stock;
         this.marca = marca;
         this.existencia = existencia;
@@ -65,11 +65,11 @@ public class Filtro {
         this.codigo = codigo;
     }
 
-    public String getMarca() {
+    public int getMarca() {
         return marca;
     }
 
-    public void setMarca(String marca) {
+    public void setMarca(int marca) {
         this.marca = marca;
     }
 
